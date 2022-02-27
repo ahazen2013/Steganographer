@@ -1,10 +1,33 @@
 
 from PIL import Image
 
+
+def crop(bigimage, smallsize, wider, taller):
+    w, h = bigimage.size
+    if wider:
+        w -= smallsize[0]
+    if taller:
+        h -= smallsize[1]
+
+    left = 0        # Setting the points for cropped image
+    right = bigimage.size[0]-1
+    top = 0
+    bottom = bigimage.size[1]-1
+    if wider:
+        left = w//2
+        right = left + smallsize[0]
+    if taller:
+        top = h//2
+        bottom = top + smallsize[1]
+
+    return bigimage.crop((left, top, right, bottom))
+
+
 # TODO
 # if images are not the same size
-#   if hiding image is smaller
-#   if displayed image is smaller
+#   if hiding image is wider, but not taller
+#   if hiding image is not wider, but is taller
+#   if displayed image is wider and taller
 # artificially brighten/darken images?
 # output more than 1 decrypted image, looking at different numbers of least significant bits
 # recommend darker displayed images
@@ -12,11 +35,15 @@ if __name__ == '__main__':
     op = input('Are you encrypting or decrypting a photo?\n').lower()
     if op[0] == 'e':
         fname = input('What is the name of the photo you are hiding?\n')
-        hiding = Image.open(fname).load()
+        imh = Image.open(fname)
+        hiding = imh.load()
+        hsize = imh.size
         fname = input('What is the name of the photo you are hiding it in?\n')
         im = Image.open(fname)
         displayed = im.load()
         width, height = im.size
+        if hsize[0] > width or hsize[1] > height:
+            hiding = crop(imh, im.size, imh.size[0] > im.size[0], imh.size[1] > im.size[1]).load()
         for i in range(width):
             for j in range(height):
                 hpixel = hiding[i, j]
